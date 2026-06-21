@@ -71,6 +71,8 @@ namespace TaskManagerAPI.Controllers
             tarea.Titulo = dto.Titulo;
             tarea.Descripcion = dto.Descripcion;
             tarea.Completada = dto.Completada;
+            tarea.FechaLimite = dto.FechaLimite;
+            tarea.Categoria = dto.Categoria;
 
             await _context.SaveChangesAsync();
 
@@ -92,5 +94,5 @@ namespace TaskManagerAPI.Controllers
         }
     }
 
-    public record TareaDto(string Titulo, string Descripcion, bool Completada);
+    public record TareaDto(string Titulo, string Descripcion, bool Completada, DateTime? FechaLimite, string Categoria);
 }

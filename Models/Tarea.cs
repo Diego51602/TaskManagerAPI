@@ -7,6 +7,8 @@ namespace TaskManagerAPI.Models
         public string Descripcion { get; set; } = string.Empty;
         public bool Completada { get; set; } = false;
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+        public DateTime? FechaLimite { get; set; }
+        public string Categoria { get; set; } = "General";
         public int UsuarioId { get; set; }
         public Usuario? Usuario { get; set; }
     }
