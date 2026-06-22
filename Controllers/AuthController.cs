@@ -22,12 +22,18 @@ namespace TaskManagerAPI.Controllers
             _config = config;
         }
 
+        /// <summary>
+        /// Registra un nuevo usuario en el sistema
+        /// Encripta la contraseña con BCrypt antes de guardarla
+        /// </summary>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
+            // Verifica si el email ya está registrado
             if (await _context.Usuarios.AnyAsync(u => u.Email == dto.Email))
                 return BadRequest(new { message = "El email ya está registrado" });
 
+            // Crea el usuario con la contraseña encriptada
             var usuario = new Usuario
             {
                 Nombre = dto.Nombre,
@@ -41,11 +47,18 @@ namespace TaskManagerAPI.Controllers
             return Ok(new { message = "Usuario registrado correctamente" });
         }
 
+        /// <summary>
+        /// Autentica un usuario y regresa un token JWT
+        /// El token expira en 8 horas
+        /// </summary>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            // Busca el usuario por email
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
+            // Verifica que el usuario exista y la contraseña sea correcta
             if (usuario == null || !BCrypt.Net.BCrypt.Verify(dto.Password, usuario.PasswordHash))
                 return Unauthorized(new { message = "Credenciales incorrectas" });
 
@@ -53,6 +66,10 @@ namespace TaskManagerAPI.Controllers
             return Ok(new { token });
         }
 
+        /// <summary>
+        /// Genera un token JWT con los datos del usuario
+        /// El token contiene el ID, email y nombre del usuario
+        /// </summary>
         private string GenerarToken(Usuario usuario)
         {
             var claims = new[]
@@ -62,7 +79,8 @@ namespace TaskManagerAPI.Controllers
                 new Claim(ClaimTypes.Name, usuario.Nombre)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -76,7 +94,4 @@ namespace TaskManagerAPI.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
-
-    public record RegisterDto(string Nombre, string Email, string Password);
-    public record LoginDto(string Email, string Password);
 }

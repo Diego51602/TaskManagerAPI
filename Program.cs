@@ -73,6 +73,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+app.UseMiddleware<TaskManagerAPI.Middleware.ErrorHandlingMiddleware>();
 
 app.UseCors("AllowAngular");
 
